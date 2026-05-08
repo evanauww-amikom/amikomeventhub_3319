@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-    public function checkout() {
-    return view('checkout');
-}
+    public function index(){
+        return view('ticket');
+    }
 }
