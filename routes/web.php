@@ -3,9 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\EventController as EventAdminController;
 
-Route::get('/', function () {
-    return '<h1>Ini adalah Halaman Tentang Aplikasi Event Hub</h1>';
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('homepage');
 
 Route::get('/welcome', function() {
     return view('welcome');
@@ -57,4 +55,11 @@ Route::get('/admin/categories/index', function() {
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('events', EventAdminController::class);
+    Route::resource('categories', \App\Http\Controllers\CategoriesController::class);
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('events', EventAdminController::class);
+    Route::resource('categories', \App\Http\Controllers\CategoriesController::class);
+    Route::resource('partners', \App\Http\Controllers\Admin\PartnerController::class);
 });

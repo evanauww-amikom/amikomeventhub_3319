@@ -23,6 +23,16 @@
         </div>
     </section>
 
+    <section class="max-w-7xl mx-auto px-6 py-10">
+        <div class="flex flex-wrap justify-center gap-3">
+            @foreach($categories as $category)
+                <span class="px-6 py-2 bg-white border border-slate-200 rounded-full text-slate-600 font-semibold shadow-sm hover:border-indigo-600 hover:text-indigo-600 transition cursor-default">
+                    #{{ $category->name }}
+                </span>
+            @endforeach
+        </div>
+    </section>
+
     <section id="events" class="max-w-7xl mx-auto px-6 py-20">
         <div class="flex justify-between items-end mb-12">
             <div>
@@ -44,6 +54,21 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="bg-slate-50 py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-center mb-12 text-slate-400 uppercase tracking-widest">Our Official Partners</h2>
+            
+            <div class="flex flex-wrap justify-center items-center gap-12 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                @foreach($partners as $partner)
+                    <div class="flex flex-col items-center">
+                        <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}" class="h-12 w-auto object-contain mb-2">
+                        <span class="text-xs font-bold text-slate-400">{{ $partner->name }}</span>
+                    </div>
+                @endforeach
             </div>
+        </div>
     </section>
 @endsection
