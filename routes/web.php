@@ -88,6 +88,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('events', EventController::class);
         
         Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+
+        Route::get('transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions.index');
         
     });
 
