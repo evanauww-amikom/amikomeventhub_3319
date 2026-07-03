@@ -24,7 +24,7 @@
             
             <tbody class="divide-y border-t">
                 @forelse($transactions as $trx)
-                    <tr class="hover:bg-slate-50/50 transition {{ $trx->status == 'pending' ? 'text-slate-400' : '' }}">
+                   <tr class="hover:bg-slate-50/50 transition {{ $trx->status == 'Pending' ? 'text-slate-400' : '' }}">
                         <td class="px-8 py-6">
                             <span class="font-mono font-bold px-3 py-1 rounded-lg text-sm {{ $trx->status == 'pending' ? 'bg-slate-100' : 'text-indigo-600 bg-indigo-50' }}">
                                 {{ $trx->order_id }}
@@ -45,16 +45,16 @@
                         </td>
                         
                         <td class="px-8 py-6">
-                            @if($trx->status === 'settlement' || $trx->status === 'success')
+                          @if($trx->status === 'Success')
                                 <span class="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold uppercase ring-1 ring-green-200">Success</span>
-                            @elseif($trx->status === 'pending')
+                            @elseif($trx->status === 'Pending')
                                 <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-bold uppercase ring-1 ring-orange-200">Pending</span>
                             @else
                                 <span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold uppercase ring-1 ring-rose-200">{{ $trx->status }}</span>
                             @endif
                         </td>
                         
-                        <td class="px-8 py-6 text-right font-black {{ $trx->status == 'pending' ? '' : 'text-slate-900' }}">
+                        <td class="px-8 py-6 text-right font-black {{ $trx->status == 'Pending' ? '' : 'text-slate-900' }}">
                             Rp {{ number_format($trx->total_price, 0, ',', '.') }}
                         </td>
                     </tr>

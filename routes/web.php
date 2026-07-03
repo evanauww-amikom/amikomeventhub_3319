@@ -40,8 +40,10 @@ Route::get('/login', function () {
 })->name('login');
 
 // Pembayaran & Sukses Midtrans
+// Pembayaran & Sukses Midtrans
 Route::get('/payment/{order_id}', [CheckoutController::class, 'payment'])->name('checkout.payment');
 Route::get('/success/{order_id}', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::post('/midtrans/callback', [CheckoutController::class, 'notification'])->name('checkout.notification');
 
 
 // ==================== ADMIN ROUTES ====================
@@ -68,4 +70,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
 
     });
+
+    Route::post('/midtrans/callback', [\App\Http\Controllers\MidtransWebhookController::class, 'handle']);
 });

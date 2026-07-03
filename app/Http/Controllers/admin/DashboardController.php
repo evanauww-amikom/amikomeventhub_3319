@@ -10,30 +10,27 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Total pendapatan hanya dihitung dari transaksi yang statusnya Success
-        $totalPendapatan = Transaction::where('status', 'Success')->sum('total_price');
+        // 1. Menjumlahkan semua nominal total_price dari kolom Transaksi Lunas
+        $totalRevenue = Transaction::whereIn('status', ['settlement', 'success'])->sum('total_price');
 
-        // Tiket terjual = jumlah transaksi yang berhasil (Success)
-        $tiketTerjual = Transaction::where('status', 'Success')->count();
+        // 2. Menghitung Berapa orang tamu yang tiketnya sudah Lunas
+        $ticketsSold = Transaction::whereIn('status', ['settlement', 'success'])->count();
 
-        // Event aktif = event yang tanggalnya belum lewat
-        $eventAktif = Event::where('date', '>=', now())->count();
+        // 3. Menghitung Jumlah Acara Mendatang yang aktif diselenggarakan
+        $activeEvents = Event::where('date', '>=', now())->count();
 
-        // Pesanan pending
-        $pesananPending = Transaction::where('status', 'Pending')->count();
+        // 4. Menghitung Transaksi Ngadat (Status belum dibayar pelanggan / Expired)
+        $pendingOrders = Transaction::where('status', 'pending')->count();
 
-        // 5 transaksi terakhir buat ditampilin di tabel
-        $latestTransactions = Transaction::with('event')
-            ->latest()
-            ->take(5)
-            ->get();
+        // 5. Menyertakan 5 daftar riwayat pesanan (History) paling mutakhir di panel
+        $recentTransactions = Transaction::with('event')->latest()->take(5)->get();
 
         return view('admin.dashboard', compact(
-            'totalPendapatan',
-            'tiketTerjual',
-            'eventAktif',
-            'pesananPending',
-            'latestTransactions'
+            'totalRevenue', 
+            'ticketsSold', 
+            'activeEvents', 
+            'pendingOrders', 
+            'recentTransactions'
         ));
     }
 }

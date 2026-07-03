@@ -10,23 +10,13 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    /**
-     * Biaya layanan tetap (samain sama yang ditampilkan di create.blade.php)
-     */
     const SERVICE_FEE = 5000;
 
-    /**
-     * Tampilkan halaman form checkout untuk 1 event.
-     */
     public function create(Event $event)
     {
         return view('checkout.create', compact('event'));
     }
 
-    /**
-     * Proses data pemesan, buat transaksi, minta snap_token ke Midtrans,
-     * lalu redirect ke halaman payment.
-     */
     public function store(Request $request, Event $event)
     {
         $validated = $request->validate([
@@ -35,7 +25,6 @@ class CheckoutController extends Controller
             'customer_phone' => 'required|string|max:20',
         ]);
 
-        // Cek stok tersedia
         if ($event->stock <= 0) {
             return redirect()
                 ->route('events.show', $event->id)
@@ -45,7 +34,6 @@ class CheckoutController extends Controller
         $totalPrice = $event->price + self::SERVICE_FEE;
         $orderId = 'ORDER-' . strtoupper(Str::random(8)) . '-' . time();
 
-        // 1. Simpan transaksi dulu dengan status Pending
         $transaction = Transaction::create([
             'event_id'       => $event->id,
             'order_id'       => $orderId,
@@ -56,11 +44,9 @@ class CheckoutController extends Controller
             'status'         => 'Pending',
         ]);
 
-        // 2. Minta snap_token ke Midtrans
         $snapToken = $this->createMidtransSnapToken($transaction, $event);
 
         if (!$snapToken) {
-            // Kalau gagal konek ke Midtrans, jangan lanjut ke halaman payment
             $transaction->update(['status' => 'Failed']);
 
             return redirect()
@@ -68,15 +54,11 @@ class CheckoutController extends Controller
                 ->with('error', 'Gagal membuat transaksi pembayaran. Silakan coba lagi.');
         }
 
-        // 3. Simpan snap_token ke transaksi
         $transaction->update(['snap_token' => $snapToken]);
 
         return redirect()->route('checkout.payment', $transaction->order_id);
     }
 
-    /**
-     * Tampilkan halaman pembayaran (Snap.js popup).
-     */
     public function payment($order_id)
     {
         $transaction = Transaction::with('event')
@@ -86,9 +68,6 @@ class CheckoutController extends Controller
         return view('checkout.payment', compact('transaction'));
     }
 
-    /**
-     * Tampilkan halaman sukses setelah pembayaran.
-     */
     public function success($order_id)
     {
         $transaction = Transaction::with('event')
@@ -99,9 +78,70 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Helper: panggil Midtrans Snap API buat dapetin snap_token.
-     * Return string token, atau null kalau gagal.
+     * BARU: Handler notifikasi/webhook dari server Midtrans.
+     * Endpoint ini dipanggil Midtrans, bukan browser user.
      */
+    public function notification(Request $request)
+    {
+        $payload = $request->all();
+
+        $orderId      = $payload['order_id'] ?? null;
+        $statusCode   = $payload['status_code'] ?? null;
+        $grossAmount  = $payload['gross_amount'] ?? null;
+        $signatureKey = $payload['signature_key'] ?? null;
+
+        if (!$orderId || !$statusCode || !$grossAmount || !$signatureKey) {
+            return response()->json(['message' => 'Payload tidak lengkap'], 400);
+        }
+
+        $serverKey = config('midtrans.server_key');
+        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+
+        if ($signatureKey !== $expectedSignature) {
+            logger()->warning('Midtrans notification: signature tidak valid', ['order_id' => $orderId]);
+            return response()->json(['message' => 'Invalid signature'], 403);
+        }
+
+        $transaction = Transaction::where('order_id', $orderId)->first();
+
+        if (!$transaction) {
+            return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        }
+
+        $transactionStatus = $payload['transaction_status'] ?? null;
+        $fraudStatus = $payload['fraud_status'] ?? null;
+
+        $previousStatus = $transaction->status;
+
+        if ($transactionStatus === 'capture') {
+            $transaction->status = ($fraudStatus === 'accept') ? 'Success' : 'Pending';
+        } elseif ($transactionStatus === 'settlement') {
+            $transaction->status = 'Success';
+        } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
+            $transaction->status = 'Failed';
+        } elseif ($transactionStatus === 'pending') {
+            $transaction->status = 'Pending';
+        }
+
+        $transaction->save();
+
+        // Kurangi stok event HANYA sekali, saat pertama kali jadi Success
+        if ($transaction->status === 'Success' && $previousStatus !== 'Success') {
+            $event = $transaction->event;
+            if ($event && $event->stock > 0) {
+                $event->decrement('stock');
+            }
+        }
+
+        logger()->info('Midtrans notification diproses', [
+            'order_id' => $orderId,
+            'status_lama' => $previousStatus,
+            'status_baru' => $transaction->status,
+        ]);
+
+        return response()->json(['message' => 'OK']);
+    }
+
     private function createMidtransSnapToken(Transaction $transaction, Event $event): ?string
     {
         $isProduction = config('midtrans.is_production');
@@ -146,7 +186,6 @@ class CheckoutController extends Controller
             return $response->json('token');
         }
 
-        // Log error biar bisa didebug lewat storage/logs/laravel.log
         logger()->error('Midtrans Snap Error', [
             'order_id' => $transaction->order_id,
             'response' => $response->body(),
