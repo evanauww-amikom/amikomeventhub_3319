@@ -17,21 +17,22 @@ class Event extends Model
         'price',
         'stock',
         'category_id',
-        'partner_id', // Pastikan kolom foreign key ini ada di tabel events Anda
+        'partner_id',
         'poster_path',
     ];
 
-    /**
-     * Relasi ke model Category
-     */
+    protected function casts(): array
+    {
+        return [
+            'date' => 'datetime',
+        ];
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * TAMBAHKAN INI: Relasi ke model Partner
-     */
     public function partner()
     {
         return $this->belongsTo(Partner::class);

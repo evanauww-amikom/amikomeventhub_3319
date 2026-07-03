@@ -18,9 +18,9 @@
             <p class="text-slate-500">AmikomEventHub Dashboard</p>
         </div>
 
-        @if(session('error'))
+            @if($errors->any())
             <div class="bg-red-100 text-red-600 p-4 rounded-xl mb-6 font-bold text-sm text-center">
-                {{ session('error') }}
+                {{ $errors->first() }}
             </div>
         @endif
 
