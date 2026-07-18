@@ -1,4 +1,5 @@
 <?php
+// app/Models/Transaction.php
 
 namespace App\Models;
 
@@ -8,29 +9,28 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     use HasFactory;
+    
+protected $fillable = [
+    'event_id',
+    'user_id',
+    'order_id',
+    'customer_name',
+    'customer_email',
+    'customer_phone',
+    'total_price',
+    'status',
+    'check_in_status', // Tambahan kolom sinkronisasi
+    'checked_in_at',   // Tambahan kolom sinkronisasi
+    'snap_token',
+];
 
-    /**
-     * Kolom yang dapat diisi secara massal (Mass Assignment).
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'event_id',
-        'order_id',
-        'customer_name',
-        'customer_email',
-        'customer_phone',
-        'total_price',
-        'status',
-        'snap_token',
-    ];
-
-    /**
-     * Relasi ke model Event (Many to One).
-     * Setiap transaksi milik satu event.
-     */
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

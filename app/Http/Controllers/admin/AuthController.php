@@ -14,22 +14,34 @@ class AuthController extends Controller
     }
 
     // 2. Fungsi memproses validasi Submit Log In
-    public function login(Request $request) {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+public function login(Request $request) {
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            
-            return redirect()->route('admin.dashboard'); // Arahkan ke rute dashboard
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+            return redirect()->route('admin.dashboard');
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau Password yang Anda berikan tidak terdaftar di database kami.',
-        ]);
+        if ($user->role === 'organizer') {
+            return $user->organizer && $user->organizer->isApproved()
+                ? redirect()->route('organizer.dashboard')
+                : redirect()->route('organizer.pending');
+        }
+
+        return redirect()->route('home');
     }
+
+    return back()->withErrors([
+        'email' => 'Email atau Password yang Anda berikan tidak terdaftar di database kami.',
+    ]);
+}
 
     // 3. Fungsi memproses Log Out (Keluar)
     public function logout(Request $request) {

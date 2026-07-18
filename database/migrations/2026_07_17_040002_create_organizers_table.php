@@ -1,0 +1,29 @@
+<?php
+// database/migrations/2026_07_17_000001_create_organizers_table.php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('organizers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            $table->string('organization_name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('logo_path')->nullable();
+            $table->string('status')->default('pending'); // pending | approved | rejected
+            $table->timestamp('verified_at')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('organizers');
+    }
+};

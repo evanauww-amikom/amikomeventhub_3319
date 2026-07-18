@@ -21,7 +21,23 @@
         <div class="hidden md:flex gap-8 font-medium">
             <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'text-indigo-600' : 'hover:text-indigo-600 transition' }}">Jelajahi</a>
             <a href="#" class="hover:text-indigo-600 transition">Tentang Kami</a>
+            @auth
+                <a href="{{ route('tickets.mine') }}" class="{{ request()->routeIs('tickets.mine') ? 'text-indigo-600' : 'hover:text-indigo-600 transition' }}">Tiket Saya</a>
+            @endauth
         </div>
+        <div class="flex items-center gap-4">
+    @auth
+        <span class="text-sm font-bold text-slate-700">Hai, {{ auth()->user()->name }}</span>
+        <form action="{{ route('admin.logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="text-sm font-bold text-rose-600">Keluar</button>
+        </form>
+    @else
+        <a href="{{ route('user.login') }}" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition">
+            Masuk
+        </a>
+    @endauth
+</div>
     </nav>
 
     <main>

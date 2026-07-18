@@ -17,7 +17,7 @@ class Event extends Model
         'price',
         'stock',
         'category_id',
-        'partner_id',
+        'organizer_id',
         'poster_path',
     ];
 
@@ -33,8 +33,24 @@ class Event extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function partner()
+    public function organizer()
     {
-        return $this->belongsTo(Partner::class);
+        return $this->belongsTo(Organizer::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    // Sudah lewat waktunya? dipakai buat validasi boleh-nggaknya review
+    public function hasEnded(): bool
+    {
+        return $this->date < now();
     }
 }

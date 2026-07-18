@@ -56,20 +56,34 @@
         </div>
 
         <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-            <h3 class="text-xl font-bold mb-6 italic text-indigo-600 underline underline-offset-8">Data Pemesan (Tanpa Login)</h3>
-            
+            @auth
+                <div class="flex items-center gap-3 mb-6 p-4 bg-indigo-50 rounded-2xl">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-800 text-sm">Checkout sebagai {{ auth()->user()->name }}</p>
+                        <p class="text-xs text-slate-500">Tiket akan tercatat di akunmu, bisa kasih ulasan setelah event selesai.</p>
+                    </div>
+                </div>
+            @else
+                <div class="mb-6 p-4 bg-amber-50 rounded-2xl text-sm text-amber-700">
+                    Checkout tanpa login. <a href="{{ route('user.login') }}" class="font-bold underline">Login dulu</a> supaya tiketmu tercatat & bisa kasih ulasan nanti.
+                </div>
+            @endauth
+
             <form action="{{ route('checkout.store', $event->id) }}" method="POST" class="space-y-6">
                 @csrf
                 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Nama Lengkap</label>
-                    <input type="text" name="customer_name" placeholder="Masukkan nama sesuai identitas" class="w-full px-5 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition font-medium" required value="{{ old('customer_name') }}">
+                    <input type="text" name="customer_name" placeholder="Masukkan nama sesuai identitas" class="w-full px-5 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition font-medium" required value="{{ old('customer_name', auth()->user()->name ?? '') }}">
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Email Aktif</label>
-                        <input type="email" name="customer_email" placeholder="contoh@gmail.com" class="w-full px-5 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition font-medium" required value="{{ old('customer_email') }}">
+                        <input type="email" name="customer_email" placeholder="contoh@gmail.com" class="w-full px-5 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition font-medium" required value="{{ old('customer_email', auth()->user()->email ?? '') }}">
                         <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">*E-Tiket akan dikirim ke email ini</p>
                     </div>
 

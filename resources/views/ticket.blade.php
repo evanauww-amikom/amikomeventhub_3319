@@ -35,7 +35,9 @@
             <!-- Ticket Header -->
             <div class="p-8 bg-indigo-50 border-b-4 border-dashed border-indigo-100 text-center relative">
                 <p class="text-indigo-600 font-bold uppercase tracking-widest text-xs mb-2">E-Ticket Resmi</p>
-                <h2 class="text-2xl font-black leading-tight">Jazz Night 2024: A Celebration</h2>
+                
+                <!-- DINAMIS: Nama/Judul Event dari Database -->
+                <h2 class="text-2xl font-black leading-tight">{{ $transaction->event->title }}</h2>
 
                 <!-- Ticket Side Cuts -->
                 <div class="absolute -left-4 -bottom-4 w-8 h-8 bg-indigo-600 rounded-full"></div>
@@ -47,47 +49,38 @@
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <p class="text-slate-400 text-xs font-bold uppercase mb-1">Nama Pembeli</p>
-                        <p class="font-bold text-lg">Donni Prabowo</p>
+                        <!-- DINAMIS: Mengunci Nama Pengguna Asli -->
+                        <p class="font-bold text-lg">{{ $transaction->customer_name }}</p>
                     </div>
                     <div>
                         <p class="text-slate-400 text-xs font-bold uppercase mb-1">Tanggal & Waktu</p>
-                        <p class="font-bold text-lg">16 Nov, 19:30</p>
+                        <!-- DINAMIS: Format Tanggal Pelaksanaan Event -->
+                        <p class="font-bold text-lg">{{ \Carbon\Carbon::parse($transaction->event->date)->translatedFormat('d M, H:i') }}</p>
                     </div>
                     <div>
                         <p class="text-slate-400 text-xs font-bold uppercase mb-1">Order ID</p>
-                        <p class="font-bold">TRX-99210</p>
+                        <!-- DINAMIS: Menampilkan Kode Order Unik Pembayaran -->
+                        <p class="font-bold text-sm">{{ $transaction->order_id }}</p>
                     </div>
                     <div>
                         <p class="text-slate-400 text-xs font-bold uppercase mb-1">Lokasi</p>
-                        <p class="font-bold">Blue Note Lounge</p>
+                        <!-- DINAMIS: Tempat Event Diselenggarakan -->
+                        <p class="font-bold text-base leading-tight">{{ $transaction->event->location }}</p>
                     </div>
                 </div>
 
                 <div class="bg-slate-100 p-6 rounded-3xl flex flex-col items-center">
                     <p class="text-slate-400 text-xs font-bold uppercase mb-4">Scan QR untuk Check-in</p>
-                    <!-- Mock QR Code -->
+                    
+                    <!-- DINAMIS: Mengganti Kotak Mockup Dengan Generator QR Code Asli Berdasarkan Order ID -->
                     <div class="w-48 h-48 bg-white p-4 rounded-xl shadow-inner flex items-center justify-center">
-                        <div class="w-full h-full border-4 border-slate-900 flex flex-wrap p-1">
-                            <!-- Just some boxes for mock QR -->
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                            <div class="w-1/4 h-1/4 bg-white"></div>
-                            <div class="w-1/4 h-1/4 bg-slate-900"></div>
-                        </div>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode($transaction->order_id) }}" 
+                             alt="QR Code Tiket" 
+                             class="w-full h-full object-contain">
                     </div>
-                    <p class="mt-4 font-mono font-bold text-slate-800">TKT-001293848</p>
+                    
+                    <!-- DINAMIS: Kode Teks Pendukung di Bawah QR -->
+                    <p class="mt-4 font-mono font-bold text-slate-800 text-xs tracking-wider">{{ $transaction->order_id }}</p>
                 </div>
             </div>
 
@@ -96,8 +89,10 @@
                     class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition">
                     Cetak / Simpan PDF
                 </button>
-                <a href="index.html"
-                    class="block text-center mt-4 text-slate-500 font-bold hover:text-indigo-600">Kembali ke Beranda</a>
+                <a href="{{ route('home') }}"
+                    class="block text-center mt-4 text-slate-500 font-bold hover:text-indigo-600 transition-colors">
+                    Kembali ke Beranda
+                </a>
             </div>
         </div>
     </div>

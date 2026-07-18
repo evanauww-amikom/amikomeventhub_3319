@@ -52,14 +52,20 @@
             {{-- Organizer --}}
             <div class="flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-100">
                 <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold shrink-0">
-                    {{ $event->partner ? strtoupper(substr($event->partner->name, 0, 2)) : 'EO' }}
+                    {{ $event->organizer ? strtoupper(substr($event->organizer->organization_name, 0, 2)) : 'EO' }}
                 </div>
                 <div>
                     <p class="text-xs text-slate-400 font-bold uppercase tracking-wide">Diselenggarakan oleh</p>
-                    <p class="font-bold text-slate-800">{{ $event->partner->name ?? 'AMIKOM Event Hub' }}</p>
+                    @if($event->organizer)
+                        <a href="{{ route('organizer.profile', $event->organizer->slug) }}" class="font-bold text-slate-800 hover:text-indigo-600 transition">
+                            {{ $event->organizer->organization_name }}
+                        </a>
+                    @else
+                        <p class="font-bold text-slate-800">AMIKOM Event Hub</p>
+                    @endif
                 </div>
             </div>
-
+            
             {{-- Description --}}
             <div class="space-y-4">
                 <h3 class="text-xl font-bold text-slate-900">Deskripsi Event</h3>

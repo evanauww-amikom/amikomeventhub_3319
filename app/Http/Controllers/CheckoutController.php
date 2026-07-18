@@ -19,9 +19,8 @@ class CheckoutController extends Controller
 
     public function store(Request $request, Event $event)
     {
+        // Hanya memvalidasi nomor telepon karena Nama & Email otomatis diambil dari session Auth
         $validated = $request->validate([
-            'customer_name'  => 'required|string|max:255',
-            'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
         ]);
 
@@ -31,14 +30,19 @@ class CheckoutController extends Controller
                 ->with('error', 'Maaf, tiket untuk event ini sudah habis.');
         }
 
+        // Mengambil data user otentik yang sedang login (termasuk user hasil SSO Google)
+        $user = auth()->user(); 
+
         $totalPrice = $event->price + self::SERVICE_FEE;
         $orderId = 'ORDER-' . strtoupper(Str::random(8)) . '-' . time();
 
+        // Menyimpan data transaksi dengan mengunci nama asli pemesan dari database
         $transaction = Transaction::create([
             'event_id'       => $event->id,
+            'user_id'        => $user->id, 
             'order_id'       => $orderId,
-            'customer_name'  => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'],
+            'customer_name'  => $user->name,   // <-- Otomatis sinkron menggunakan nama akunmu
+            'customer_email' => $user->email,  // <-- Otomatis menggunakan email akunmu
             'customer_phone' => $validated['customer_phone'],
             'total_price'    => $totalPrice,
             'status'         => 'Pending',
@@ -94,7 +98,7 @@ class CheckoutController extends Controller
                     
                     // Hanya lakukan update jika status di database lokal masih 'pending' (indikasi Webhook tidak masuk)
                     if (strtolower($transaction->status) === 'pending') {
-                      $transaction->update(['status' => 'Success']);
+                        $transaction->update(['status' => 'Success']);
 
                         if ($transaction->event && $transaction->event->stock > 0) {
                             $transaction->event->stock = $transaction->event->stock - 1;
@@ -119,7 +123,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * BARU: Handler notifikasi/webhook dari server Midtrans.
+     * Handler notifikasi/webhook dari server Midtrans.
      * Endpoint ini dipanggil Midtrans, bukan browser user.
      */
     public function notification(Request $request)

@@ -13,7 +13,7 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         // 1. Buat query dasar untuk mengambil semua event beserta relasinya
-        $query = Event::with(['category', 'partner'])->latest();
+        $query = Event::with('category')->orderBy('created_at', 'desc');
 
         // TAMBAHKAN LOGIKA FILTER: Jika URL memiliki parameter 'category' dan nilainya tidak kosong
         if ($request->has('category') && $request->category != '') {

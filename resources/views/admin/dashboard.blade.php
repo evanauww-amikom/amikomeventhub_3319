@@ -23,8 +23,8 @@
         <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-7a2 2 0 00-2-2H5z"></path>
-            </svg>
-        </div>
+                </svg>
+            </div>
         <p class="text-slate-400 text-xs font-bold uppercase tracking-wide mb-1">Tiket Terjual</p>
         <h3 class="text-2xl font-black text-slate-900">{{ number_format($ticketsSold, 0, ',', '.') }}</h3>
     </div>
@@ -50,6 +50,30 @@
     </div>
 
 </div>
+
+{{-- ============ GRAFIK (Fase 4) ============ --}}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-2">
+        <h3 class="font-black text-lg text-slate-900 mb-1">Pertumbuhan User</h3>
+        <p class="text-slate-400 text-sm mb-4">Jumlah user baru per bulan (6 bulan terakhir)</p>
+        <canvas id="chartUserGrowth" height="100"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <h3 class="font-black text-lg text-slate-900 mb-1">Pertumbuhan Event</h3>
+        <p class="text-slate-400 text-sm mb-4">Event baru per bulan</p>
+        <canvas id="chartEventGrowth" height="150"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-3">
+        <h3 class="font-black text-lg text-slate-900 mb-1">Revenue per Organizer</h3>
+        <p class="text-slate-400 text-sm mb-4">Top 10 organizer berdasarkan pendapatan sukses</p>
+        <canvas id="chartRevenueOrganizer" height="80"></canvas>
+    </div>
+
+</div>
+{{-- ============ END GRAFIK ============ --}}
 
 <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
     <div class="p-8 border-b border-slate-100 flex justify-between items-center">
@@ -107,3 +131,59 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+fetch("{{ route('admin.dashboard.chart-data') }}")
+    .then(res => res.json())
+    .then(data => {
+        new Chart(document.getElementById('chartUserGrowth'), {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'User Baru',
+                    data: data.userGrowth,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79,70,229,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('chartEventGrowth'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Event Baru',
+                    data: data.eventGrowth,
+                    backgroundColor: '#f97316',
+                    borderRadius: 6,
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('chartRevenueOrganizer'), {
+            type: 'bar',
+            data: {
+                labels: data.organizerNames,
+                datasets: [{
+                    label: 'Revenue (Rp)',
+                    data: data.organizerRevenue,
+                    backgroundColor: '#10b981',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } }
+            }
+        });
+    })
+    .catch(err => console.error('Gagal load chart data:', err));
+</script>
+@endpush
