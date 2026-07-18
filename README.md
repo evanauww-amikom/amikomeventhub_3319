@@ -9,3 +9,6 @@ https://amikomeventhub-3319-main-is4vaz.free.laravel.cloud/event
 https://amikomeventhub-3319-main-is4vaz.free.laravel.cloud/transaction
 https://amikomeventhub-3319-main-is4vaz.free.laravel.cloud/event-detail
 https://amikomeventhub-3319-main-is4vaz.free.laravel.cloud/checkout
+
+Project UAS : 
+http://amikomeventhub3319.freepage.cc/
